@@ -10,7 +10,7 @@ Run full scene inference in sample image
 require 'torch'
 require 'cutorch'
 require 'image'
-
+local coco1 = require 'coco.env'
 --------------------------------------------------------------------------------
 -- parse arguments
 local cmd = torch.CmdLine()
@@ -28,7 +28,6 @@ cmd:option('-ss', .5, 'scale step')
 cmd:option('-dm', false, 'use DeepMask version of SharpMask')
 
 local config = cmd:parse(arg)
-
 --------------------------------------------------------------------------------
 -- various initializations
 torch.setdefaulttensortype('torch.FloatTensor')
@@ -36,7 +35,6 @@ cutorch.setDevice(config.gpu)
 
 local coco = require 'coco'
 local maskApi = coco.MaskApi
-
 local meanstd = {mean = { 0.485, 0.456, 0.406 }, std = { 0.229, 0.224, 0.225 }}
 
 --------------------------------------------------------------------------------
@@ -83,10 +81,39 @@ infer:forward(img)
 -- get top propsals
 local masks,_ = infer:getTopProps(.2,h,w)
 
--- save result
-local res = img:clone()
-maskApi.drawMasks(res, masks, 10)
-image.save(string.format('./res.jpg',config.model),res)
+----------------chandni
+local annFile = string.format('../../../data/annotations/instances_val2014.json',
+  config.datadir,'val')
+  coco1 = coco.CocoApi(annFile)
+  --maskApi = coco.MaskApi
 
+print('printing cat ids')
+print(coco1:getCatIds())
+
+--ds = DataSampler:__init('~/data','val')
+--print('printing category ids')
+--print(ds.catIds)
+
+-----------------chandni
+
+
+-- save result
+for i=1,tostring(config.np) do
+	print(i)
+	local res = img:clone()
+	maskApi.drawMasks(res, masks[i], 10)
+	--print(masks[1])
+ 	--print(maskApi.toBbox(maskApi.encode(masks)))
+	--printing the mask to a file
+	--file = io.open ("bb.txt","w")
+	--io.output(file)
+	--io.write(tostring(config.np),"\n")
+	--io.write(tostring(maskApi.toBbox(maskApi.encode(masks))))
+	--- end
+	--print(maskApi.merge(masks))
+
+	-- local polygons = []
+	image.save(string.format('./res'..i..'.jpg',config.model),res)
+end
 print('| done')
 collectgarbage()
