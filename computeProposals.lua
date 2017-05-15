@@ -20,7 +20,7 @@ cmd:text()
 cmd:argument('-model', 'path to model to load')
 cmd:text('Options:')
 cmd:option('-img','data/testImage.jpg' ,'path/to/test/image')
-cmd:option('-gpu', 1, 'gpu device')
+cmd:option('-gpu', 2, 'gpu device')
 cmd:option('-np', 5,'number of proposals to save in test')
 cmd:option('-si', -2.5, 'initial scale')
 cmd:option('-sf', .5, 'final scale')
@@ -83,10 +83,29 @@ infer:forward(img)
 -- get top propsals
 local masks,_ = infer:getTopProps(.2,h,w)
 
--- save result
-local res = img:clone()
-maskApi.drawMasks(res, masks, 10)
-image.save(string.format('./res.jpg',config.model),res)
+print(maskApi.toBbox(maskApi.encode(masks)));
 
+-- save result
+--local res = img:clone()
+--maskApi.drawMasks(res, masks, 10, 1.0)
+--image.save(string.format('./res.jpg',config.model),res)
+-- save result
+for i=1,tostring(config.np) do
+        --print(i)
+        local res = img:clone()
+        maskApi.drawMasks(res, masks[i], 10)
+        --print(masks[1])
+        --print(maskApi.toBbox(maskApi.encode(masks)))
+        --printing the mask to a file
+        file = io.open ("bb.txt","w")
+        io.output(file)
+        --io.write(tostring(config.np),"\n")
+        io.write(tostring(maskApi.toBbox(maskApi.encode(masks))))
+        -- end
+        --print(maskApi.merge(masks))
+
+        -- local polygons = []
+        image.save(string.format('./res'..i..'.jpg',config.model),res)
+end
 print('| done')
 collectgarbage()

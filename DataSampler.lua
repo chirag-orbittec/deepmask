@@ -129,17 +129,22 @@ end
 function DataSampler:maskSampling()
   local iSz,wSz,gSz = self.iSz,self.wSz,self.gSz
 
-  local cat,ann = torch.random(80)
+  local cat,ann = torch.random(1)
   while not ann or ann.iscrowd == 1 or ann.area < 100 or ann.bbox[3] < 5
     or ann.bbox[4] < 5 do
+     -- print("self", self.catIds)
+     -- print("cat",cat)
       local catId = self.catIds[cat]
+     --print("catid",catId)
       local annIds = self.coco:getAnnIds({catId=catId})
+     -- print("annids",annIds)
       local annid = annIds[torch.random(annIds:size(1))]
+     -- print("annid", annid)
       ann = self.coco:loadAnns(annid)[1]
   end
   local bbox = self:jitterBox(ann.bbox)
   local imgName = self.coco:loadImgs(ann.image_id)[1].file_name
-
+  print(imgName)
   -- input
   local pathImg = string.format('%s/%s2014/%s',self.datadir,self.split,imgName)
   local inp = image.load(pathImg,3)
